@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Mappa Vico Equense — Leaflet + Classifica</title>
+
+  <link rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+        crossorigin=""/>
+
+  <style>
+    :root{
+      --panel-bg: #ffffff;
+      --panel-shadow: 0 10px 30px rgba(0,0,0,.12);
+      --panel-radius: 16px;
+    }
+    html,body{height:100%;margin:0}
+    #app{position:relative;height:100vh}
+    #map{height:100%;}
+
+    /* Pannello classifica */
+    #panel{
+      position:absolute; right:16px; top:16px; z-index:500;
+      background:var(--panel-bg); box-shadow:var(--panel-shadow);
+      border-radius:var(--panel-radius); padding:14px 16px; width:270px;
+      max-width:90vw; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; 
+    }
+    #panel h2{margin:0 0 8px; font-size:18px}
+    #panel .meta{font-size:12px; opacity:.7; margin-bottom:6px}
+    #leaderboard{list-style:none; padding:0; margin:8px 0 0}
+    #leaderboard li{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:8px 10px; border-radius:10px; margin-bottom:6px; background:#f6f7f9;
+    }
+    .badge{
+      display:inline-flex; align-items:center; gap:8px; font-weight:600;
+    }
+    .dot{
+      width:12px; height:12px; border-radius:50%;
+      display:inline-block; background:#555;
+    }
+    .count{font-variant-numeric:tabular-nums; font-weight:700}
+    .legend{display:flex; gap:10px; flex-wrap:wrap; margin-top:8px; font-size:12px; opacity:.85}
+    .legend span{display:flex; align-items:center; gap:6px}
+    @media (max-width: 640px){
+      #panel{right:8px; top:8px; width:220px; padding:10px 12px}
+      #panel h2{font-size:16px}
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div id="map"></div>
+
+    <!-- Pannello Classifica -->
+    <aside id="panel">
+      <h2>Classifica</h2>
+      <div class="meta" id="summary">Caricamento…</div>
+      <ol id="leaderboard"></ol>
+      <div class="legend" id="legend"></div>
+    </aside>
+  </div>
+
+  <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <script>
+  document.addEventListener('DOMContentLoaded', async () => {
+    // Mappa su Vico Equense
+    const map = L.map('map').setView([40.660, 14.420], 13);
+
+    // Tiles OSM (gratis)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Colori squadre (aggiungi/edita qui i team)
+    const TEAM_COLORS = {
+      "rossi": "#e74c3c",
+      "blu":   "#2980b9",
+      "verdi": "#27ae60",
+      "gialli":"#f1c40f"
+    };
+    const FALLBACK = "#7f8c8d"; // per pin non ancora trovati
+
+    // Carica pin + costruisci classifica
+    let pins = [];
+    try {
+      const res = await fetch('pins.json?ts=' + Date.now(), { cache: 'no-store' });
+      pins = await res.json();
+    } catch (e) {
+      console.error('Errore nel caricare pins.json', e);
+    }
+
+    // Disegna pin: circleMarker colorato per squadra che l’ha trovato
+    pins.forEach(p => {
+      const color = p.foundBy && TEAM_COLORS[p.foundBy] ? TEAM_COLORS[p.foundBy] : FALLBACK;
+      const marker = L.circleMarker([p.lat, p.lng], {
+        radius: 9, color, fillColor: color, fillOpacity: 0.95, weight: 2
+      }).addTo(map);
+
+      const who = p.foundBy ? `Trovato dai <strong>${escapeHtml(p.foundBy)}</strong>` : `<em>Non ancora trovato</em>`;
+      marker.bindPopup(
+        `${p.title ? `<strong>${escapeHtml(p.title)}</strong><br>` : ''}` +
+        `${p.desc  ? `${escapeHtml(p.desc)}<br>` : ''}` +
+        `${who}`
+      );
+    });
+
+    // === CLASSIFICA ===
+    const totals = {}; // { team: count }
+    let foundCount = 0;
+
+    pins.forEach(p => {
+      if (p.foundBy) {
+        foundCount++;
+        const t = String(p.foundBy).trim().toLowerCase();
+        totals[t] = (totals[t] || 0) + 1;
+      }
+    });
+
+    renderLegend(TEAM_COLORS, FALLBACK);
+    renderSummary(foundCount, pins.length);
+    renderLeaderboard(totals);
+
+    // Utils di rendering
+    function renderSummary(found, total){
+      const el = document.getElementById('summary');
+      el.textContent = `Trovati: ${found} / ${total}`;
+    }
+
+    function renderLegend(colors, fallback){
+      const el = document.getElementById('legend');
+      el.innerHTML = '';      
+      const mk = (name, color) => {
+        const span = document.createElement('span');
+        span.innerHTML = `<span class="dot" style="background:${color}"></span>${escapeHtml(name)}`;
+        el.appendChild(span);
+      };
+      Object.entries(colors).forEach(([name, color]) => mk(name, color));
+      mk('non trovato', fallback);
+    }
+
+    function renderLeaderboard(counts){
+      const list = document.getElementById('leaderboard');
+      list.innerHTML = '';
+
+      const items = Object.entries(counts)
+        .map(([team, count]) => ({team, count}))
+        .sort((a,b) => b.count - a.count || a.team.localeCompare(b.team, 'it'));
+
+      if (items.length === 0) {
+        const li = document.createElement('li');
+        li.textContent = 'Nessun ritrovamento registrato';
+        list.appendChild(li);
+        return;
+      }
+
+      items.forEach(({team, count}) => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <span class="badge">
+            <span class="dot" style="background:${TEAM_COLORS[team] || '#555'}"></span>
+            ${escapeHtml(team)}
+          </span>
+          <span class="count">${count}</span>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    function escapeHtml(str){
+      return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+    }
+
+    // Utility: mostra in console le coordinate cliccate (comodo per nuovi pin)
+    map.on('click', (e) => console.log('Nuovo pin:', e.latlng));
+  });
+  </script>
+</body>
+</html>
