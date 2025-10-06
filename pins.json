@@ -5,7 +5,7 @@
     "lng": 14.4159,
     "title": "Piazza Umberto I",
     "desc": "Punto d’incontro",
-    "foundBy": "rossi"
+    "foundBy": "JB"
   },
   {
     "id": 2,
@@ -13,7 +13,7 @@
     "lng": 14.4274,
     "title": "Marina di Vico",
     "desc": "Vista mare",
-    "foundBy": "blu"
+    "foundBy": "HUNTERS"
   },
   {
     "id": 3,
@@ -37,7 +37,7 @@
     "lng": 14.4208,
     "title": "Corso Filangieri",
     "desc": "Indizio #5",
-    "foundBy": "verdi"
+    "foundBy": "SANS"
   },
   {
     "id": 6,
@@ -53,7 +53,7 @@
     "lng": 14.4232,
     "title": "Seiano",
     "desc": "Bonus",
-    "foundBy": "gialli"
+    "foundBy": "VOLPI"
   },
   {
     "id": 8,
