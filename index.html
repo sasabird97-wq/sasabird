@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Mappa Vico Equense — Leaflet + Classifica</title>
+  <title>Mappa Vico Equense — Card + Classifica + Countdown</title>
 
   <link rel="stylesheet"
         href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -11,98 +11,132 @@
         crossorigin=""/>
 
   <style>
-    :root{
-      --panel-bg: #ffffff;
-      --panel-shadow: 0 10px 30px rgba(0,0,0,.12);
-      --panel-radius: 16px;
-    }
+    :root{--bg:#f3f5f8;--card:#ffffff;--shadow:0 12px 32px rgba(0,0,0,.08);--radius:20px;--accent:#284678;}
+    *{box-sizing:border-box}
     html,body{height:100%;margin:0}
-    #app{position:relative;height:100vh}
-    #map{height:100%;}
-
-    /* Pannello classifica */
-    #panel{
-      position:absolute; right:16px; top:16px; z-index:500;
-      background:var(--panel-bg); box-shadow:var(--panel-shadow);
-      border-radius:var(--panel-radius); padding:14px 16px; width:270px;
-      max-width:90vw; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; 
-    }
+    body{background:var(--bg); font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; color:#1f2a37}
+    .wrap{max-width:1100px; margin:24px auto; padding:0 16px}
+    header.card{display:flex; align-items:center; justify-content:space-between; gap:16px; padding:16px 18px}
+    .card{background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); padding:16px;}
+    .countdown{display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
+    .countdown .label{font-weight:600; opacity:.8}
+    .countdown .grid{display:flex; gap:10px; align-items:stretch}
+    .cd-box{display:flex; flex-direction:column; align-items:center; justify-content:center; min-width:74px; padding:10px 12px; border-radius:14px; background:#f6f7f9; text-align:center;}
+    .cd-num{font-size:22px; font-variant-numeric:tabular-nums; font-weight:800}
+    .cd-unit{font-size:11px; opacity:.7; margin-top:2px}
+    .grid{display:grid; grid-template-columns: 1.2fr .8fr; gap:18px; margin-top:18px;}
+    @media (max-width: 900px){.grid{grid-template-columns: 1fr}}
+    .map-card .title{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px}
+    #map{height:62vh; border-radius:14px; overflow:hidden}
+    @media (max-width: 900px){ #map{height:58vh} }
     #panel h2{margin:0 0 8px; font-size:18px}
     #panel .meta{font-size:12px; opacity:.7; margin-bottom:6px}
     #leaderboard{list-style:none; padding:0; margin:8px 0 0}
-    #leaderboard li{
-      display:flex; align-items:center; justify-content:space-between;
-      padding:8px 10px; border-radius:10px; margin-bottom:6px; background:#f6f7f9;
-    }
-    .badge{
-      display:inline-flex; align-items:center; gap:8px; font-weight:600;
-    }
-    .dot{
-      width:12px; height:12px; border-radius:50%;
-      display:inline-block; background:#555;
-    }
+    #leaderboard li{display:flex; align-items:center; justify-content:space-between; padding:8px 10px; border-radius:10px; margin-bottom:6px; background:#f6f7f9;}
+    .badge{display:inline-flex; align-items:center; gap:8px; font-weight:600}
+    .dot{width:12px; height:12px; border-radius:50%; display:inline-block; background:#555}
     .count{font-variant-numeric:tabular-nums; font-weight:700}
-    .legend{display:flex; gap:10px; flex-wrap:wrap; margin-top:8px; font-size:12px; opacity:.85}
+    .btn{padding:8px 12px; border-radius:10px; background:var(--accent); color:#fff; text-decoration:none; font-weight:600; box-shadow:0 6px 18px rgba(40,70,120,.15);}
+    .legend{display:flex; flex-wrap:wrap; gap:10px; margin-top:10px; font-size:12px; opacity:.85}
     .legend span{display:flex; align-items:center; gap:6px}
-    @media (max-width: 640px){
-      #panel{right:8px; top:8px; width:220px; padding:10px 12px}
-      #panel h2{font-size:16px}
-    }
   </style>
 </head>
 <body>
-  <div id="app">
-    <div id="map"></div>
+  <div class="wrap">
+    <header class="card">
+      <div style="display:flex; align-items:center; gap:10px">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 2l9 4v6c0 5-4 9-9 10-5-1-9-5-9-10V6l9-4z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+          <circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="1.5" fill="none"/>
+        </svg>
+        <h1 style="font-size:18px; margin:0">Mappa Vico Equense</h1>
+      </div>
 
-    <!-- Pannello Classifica -->
-    <aside id="panel">
-      <h2>Classifica</h2>
-      <div class="meta" id="summary">Caricamento…</div>
-      <ol id="leaderboard"></ol>
-      <div class="legend" id="legend"></div>
-    </aside>
+      <!-- Countdown: imposta la scadenza del gioco -->
+      <div class="countdown" id="countdown" data-target="2026-01-01T00:00:00+01:00">
+        <span class="label">Scadenza tra:</span>
+        <div class="grid">
+          <div class="cd-box"><div class="cd-num" id="cd-days">--</div><div class="cd-unit">giorni</div></div>
+          <div class="cd-box"><div class="cd-num" id="cd-hours">--</div><div class="cd-unit">ore</div></div>
+          <div class="cd-box"><div class="cd-num" id="cd-mins">--</div><div class="cd-unit">min</div></div>
+          <div class="cd-box"><div class="cd-num" id="cd-secs">--</div><div class="cd-unit">sec</div></div>
+        </div>
+      </div>
+    </header>
+
+    <div class="grid">
+      <section class="card map-card">
+        <div class="title">
+          <h2 style="margin:0;font-size:16px">Mappa</h2>
+          <a class="btn" href="#" onclick="location.reload()">Aggiorna</a>
+        </div>
+        <div id="map"></div>
+      </section>
+
+      <aside class="card" id="panel">
+        <h2>Classifica</h2>
+        <div class="meta" id="summary">Caricamento…</div>
+        <ol id="leaderboard"></ol>
+        <div class="legend" id="legend"></div>
+      </aside>
+    </div>
   </div>
 
   <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
   <script>
+  // ===== COUNTDOWN =====
+  (function initCountdown(){
+    const el = document.getElementById('countdown');
+    if(!el) return;
+    const target = new Date(el.dataset.target || '');
+    const daysEl = document.getElementById('cd-days');
+    const hrsEl  = document.getElementById('cd-hours');
+    const minEl  = document.getElementById('cd-mins');
+    const secEl  = document.getElementById('cd-secs');
+    const two = n => String(n).padStart(2,'0');
+    function tick(){
+      const diff = target - new Date();
+      if (isNaN(target.getTime())) { daysEl.textContent = hrsEl.textContent = minEl.textContent = secEl.textContent = '--'; return; }
+      if (diff <= 0) { daysEl.textContent = hrsEl.textContent = minEl.textContent = secEl.textContent = '00'; el.querySelector('.label').textContent = 'Tempo scaduto!'; return; }
+      const d = Math.floor(diff/86400000);
+      const h = Math.floor((diff%86400000)/3600000);
+      const m = Math.floor((diff%3600000)/60000);
+      const s = Math.floor((diff%60000)/1000);
+      daysEl.textContent = two(d); hrsEl.textContent = two(h); minEl.textContent = two(m); secEl.textContent = two(s);
+    }
+    tick(); setInterval(tick, 1000);
+  })();
+
   document.addEventListener('DOMContentLoaded', async () => {
-    // Mappa su Vico Equense
+    // ===== MAPPA =====
     const map = L.map('map').setView([40.660, 14.420], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 19, attribution: '&copy; OpenStreetMap contributors'}).addTo(map);
 
-    // Tiles OSM (gratis)
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
+    // ===== TEAM COLORS =====
+    const TEAM_COLORS = {"juventude bonea": "#e74c3c", "assi": "#2980b9", "inseriooni": "#27ae60", "volpi del faito": "#f1c40f", "sans village": "#8e44ad", "falò": "#e67e22", "hunters": "#16a085", "segugi": "#2c3e50", "modianus": "#d35400"}; // normalized (lowercase) name -> color
+    const TEAM_LIST = [{"name": "Juventude Bonea", "color": "#e74c3c"}, {"name": "Assi", "color": "#2980b9"}, {"name": "Inseriooni", "color": "#27ae60"}, {"name": "Volpi Del Faito", "color": "#f1c40f"}, {"name": "Sans Village", "color": "#8e44ad"}, {"name": "Falò", "color": "#e67e22"}, {"name": "Hunters", "color": "#16a085"}, {"name": "Segugi", "color": "#2c3e50"}, {"name": "Modianus", "color": "#d35400"}];     // for legend with original case
 
-    // Colori squadre (aggiungi/edita qui i team)
-    const TEAM_COLORS = {
-      "rossi": "#e74c3c",
-      "blu":   "#2980b9",
-      "verdi": "#27ae60",
-      "gialli":"#f1c40f"
-    };
-    const FALLBACK = "#7f8c8d"; // per pin non ancora trovati
+    function teamColor(name){
+      if(!name) return null;
+      const key = String(name).trim().toLowerCase();
+      return TEAM_COLORS[key] || null;
+    }
 
-    // Carica pin + costruisci classifica
+    // ===== DATA =====
     let pins = [];
     try {
       const res = await fetch('pins.json?ts=' + Date.now(), { cache: 'no-store' });
       pins = await res.json();
-    } catch (e) {
-      console.error('Errore nel caricare pins.json', e);
-    }
+    } catch (e) { console.error('Errore nel caricare pins.json', e); }
 
-    // Disegna pin: circleMarker colorato per squadra che l’ha trovato
+    // ===== MARKERS =====
+    const FALLBACK = "#7f8c8d";
     pins.forEach(p => {
-      const color = p.foundBy && TEAM_COLORS[p.foundBy] ? TEAM_COLORS[p.foundBy] : FALLBACK;
-      const marker = L.circleMarker([p.lat, p.lng], {
-        radius: 9, color, fillColor: color, fillOpacity: 0.95, weight: 2
-      }).addTo(map);
-
-      const who = p.foundBy ? `Trovato dai <strong>${escapeHtml(p.foundBy)}</strong>` : `<em>Non ancora trovato</em>`;
+      const color = teamColor(p.foundBy) || FALLBACK;
+      const marker = L.circleMarker([p.lat, p.lng], { radius: 9, color, fillColor: color, fillOpacity: 0.95, weight: 2 }).addTo(map);
+      const who = p.foundBy ? `Trovato da <strong>${escapeHtml(p.foundBy)}</strong>` : `<em>Non ancora trovato</em>`;
       marker.bindPopup(
         `${p.title ? `<strong>${escapeHtml(p.title)}</strong><br>` : ''}` +
         `${p.desc  ? `${escapeHtml(p.desc)}<br>` : ''}` +
@@ -110,10 +144,9 @@
       );
     });
 
-    // === CLASSIFICA ===
-    const totals = {}; // { team: count }
+    // ===== CLASSIFICA =====
+    const totals = {}; // team -> count
     let foundCount = 0;
-
     pins.forEach(p => {
       if (p.foundBy) {
         foundCount++;
@@ -122,62 +155,44 @@
       }
     });
 
-    renderLegend(TEAM_COLORS, FALLBACK);
     renderSummary(foundCount, pins.length);
     renderLeaderboard(totals);
+    renderLegend();
 
-    // Utils di rendering
     function renderSummary(found, total){
-      const el = document.getElementById('summary');
-      el.textContent = `Trovati: ${found} / ${total}`;
+      document.getElementById('summary').textContent = `Trovati: ${found} / ${total}`;
     }
 
-    function renderLegend(colors, fallback){
+    function renderLegend(){
       const el = document.getElementById('legend');
-      el.innerHTML = '';      
-      const mk = (name, color) => {
-        const span = document.createElement('span');
-        span.innerHTML = `<span class="dot" style="background:${color}"></span>${escapeHtml(name)}`;
-        el.appendChild(span);
-      };
-      Object.entries(colors).forEach(([name, color]) => mk(name, color));
-      mk('non trovato', fallback);
+      el.innerHTML = '';
+      TEAM_LIST.forEach(({name, color}) => {
+        const item = document.createElement('span');
+        item.innerHTML = `<span class="dot" style="background:${color}"></span>${escapeHtml(name)}`;
+        el.appendChild(item);
+      });
     }
 
     function renderLeaderboard(counts){
       const list = document.getElementById('leaderboard');
       list.innerHTML = '';
-
-      const items = Object.entries(counts)
-        .map(([team, count]) => ({team, count}))
+      const items = Object.entries(counts).map(([team, count]) => ({team, count}))
         .sort((a,b) => b.count - a.count || a.team.localeCompare(b.team, 'it'));
-
       if (items.length === 0) {
         const li = document.createElement('li');
         li.textContent = 'Nessun ritrovamento registrato';
         list.appendChild(li);
         return;
       }
-
       items.forEach(({team, count}) => {
         const li = document.createElement('li');
-        li.innerHTML = `
-          <span class="badge">
-            <span class="dot" style="background:${TEAM_COLORS[team] || '#555'}"></span>
-            ${escapeHtml(team)}
-          </span>
-          <span class="count">${count}</span>
-        `;
+        const color = TEAM_COLORS[team] || '#555';
+        li.innerHTML = `<span class="badge"><span class="dot" style="background:${color}"></span>${escapeHtml(team)}</span><span class="count">${count}</span>`;
         list.appendChild(li);
       });
     }
 
-    function escapeHtml(str){
-      return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
-    }
-
-    // Utility: mostra in console le coordinate cliccate (comodo per nuovi pin)
-    map.on('click', (e) => console.log('Nuovo pin:', e.latlng));
+    function escapeHtml(str){ return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s])); }
   });
   </script>
 </body>
