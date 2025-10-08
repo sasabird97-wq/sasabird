@@ -1,4 +1,4 @@
-# Mappa Vico Equense — Leaflet + Classifica
+# Mappa Vico Equense 
 
 
 
