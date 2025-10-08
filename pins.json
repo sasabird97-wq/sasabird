@@ -4,7 +4,7 @@
     "lat": 40.6607,
     "lng": 14.4159,
     "title": "Piazza Umberto I",
-    "desc": "Punto d’incontro",
+    "desc": "Capsula 1",
     "foundBy": "Juventude Bonea"
   },
   {
@@ -12,7 +12,7 @@
     "lat": 40.6579,
     "lng": 14.4274,
     "title": "Marina di Vico",
-    "desc": "Vista mare",
+    "desc": "Capsula 2",
     "foundBy": "Assi"
   },
   {
@@ -20,15 +20,15 @@
     "lat": 40.6609,
     "lng": 14.4146,
     "title": "Chiesa SS. Annunziata",
-    "desc": "Indizio #3",
-    "foundBy": null
+    "desc": "Capsula 3",
+    "foundBy": "Volpi Del Faito"
   },
   {
     "id": 4,
     "lat": 40.6547,
     "lng": 14.4152,
     "title": "San Vito Belvedere",
-    "desc": "Checkpoint",
+    "desc": "Capsula 4",
     "foundBy": "Volpi Del Faito"
   },
   {
@@ -36,7 +36,7 @@
     "lat": 40.6636,
     "lng": 14.4208,
     "title": "Corso Filangieri",
-    "desc": "Indizio #5",
+    "desc": "Capsula 5",
     "foundBy": "Hunters"
   },
   {
@@ -44,7 +44,7 @@
     "lat": 40.674,
     "lng": 14.4265,
     "title": "Marina d’Equa",
-    "desc": "Prova pratica",
-    "foundBy": null
+    "desc": "Capsula 6",
+    "foundBy": "Hunters"
   }
 ]
