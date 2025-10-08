@@ -46,5 +46,13 @@
     "title": "Marina d’Equa",
     "desc": "Capsula 6",
     "foundBy": "Hunters"
+  },
+  {
+    "id": 7,
+    "lat": 40.694,
+    "lng": 14.4565,
+    "title": "Nuovo luogo",
+    "desc": "Capsula 7",
+    "foundBy": "Falò"
   }
 ]

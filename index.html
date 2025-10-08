@@ -116,12 +116,13 @@
 
     // ===== TEAM COLORS =====
     const TEAM_COLORS = {"juventude bonea": "#e74c3c", "assi": "#2980b9", "inseriooni": "#27ae60", "volpi del faito": "#f1c40f", "sans village": "#8e44ad", "falò": "#e67e22", "hunters": "#16a085", "segugi": "#2c3e50", "modianus": "#d35400"}; // normalized (lowercase) name -> color
-    const TEAM_LIST = [{"name": "Juventude Bonea", "color": "#e74c3c"}, {"name": "Assi", "color": "#2980b9"}, {"name": "Inseriooni", "color": "#27ae60"}, {"name": "Volpi Del Faito", "color": "#f1c40f"}, {"name": "Sans Village", "color": "#8e44ad"}, {"name": "Falò", "color": "#e67e22"}, {"name": "Hunters", "color": "#16a085"}, {"name": "Segugi", "color": "#2c3e50"}, {"name": "Modianus", "color": "#d35400"}];     // for legend with original case
+    const TEAM_EMOJIS = {"juventude bonea": "☢️", "assi": "🃏", "inseriooni": "🐲", "volpi del faito": "🦊", "sans village": "🏠", "falò": "🔥", "hunters": "🦈", "segugi": "🐶", "modianus": "🐉"};
+    const TEAM_LIST = [{"name": "Juventude Bonea", "color": "#e74c3c", "emoji": "☢️"}, {"name": "Assi", "color": "#2980b9", "emoji": "🃏"}, {"name": "Inseriooni", "color": "#27ae60", "emoji": "🐲"}, {"name": "Volpi Del Faito", "color": "#f1c40f", "emoji": "🦊"}, {"name": "Sans Village", "color": "#8e44ad", "emoji": "🏠"}, {"name": "Falò", "color": "#e67e22", "emoji": "🔥"}, {"name": "Hunters", "color": "#16a085", "emoji": "🦈"}, {"name": "Segugi", "color": "#2c3e50", "emoji": "🐶"}, {"name": "Modianus", "color": "#d35400", "emoji": "🐉"}];     // for legend with original case
 
     function teamColor(name){
       if(!name) return null;
       const key = String(name).trim().toLowerCase();
-      return TEAM_COLORS[key] || null;
+      return TEAM_EMOJIS[key] || null;
     }
 
     // ===== DATA =====
@@ -134,8 +135,14 @@
     // ===== MARKERS =====
     const FALLBACK = "#7f8c8d";
     pins.forEach(p => {
-      const color = teamColor(p.foundBy) || FALLBACK;
-      const marker = L.circleMarker([p.lat, p.lng], { radius: 9, color, fillColor: color, fillOpacity: 0.95, weight: 2 }).addTo(map);
+      const emoji = teamColor(p.foundBy) || FALLBACK;
+      const icon = L.divIcon({
+        className: 'text-marker',
+        html: emoji, // 👈 your word here
+        iconSize: [90, 90], // optional sizing
+        iconAnchor: [30, 10], // centers the text
+      });
+      const marker = L.marker([p.lat, p.lng], { icon: icon }).addTo(map);
       const who = p.foundBy ? `Trovato da <strong>${escapeHtml(p.foundBy)}</strong>` : `<em>Non ancora trovato</em>`;
       marker.bindPopup(
         `${p.title ? `<strong>${escapeHtml(p.title)}</strong><br>` : ''}` +
@@ -166,9 +173,9 @@
     function renderLegend(){
       const el = document.getElementById('legend');
       el.innerHTML = '';
-      TEAM_LIST.forEach(({name, color}) => {
+      TEAM_LIST.forEach(({name, color, emoji}) => {
         const item = document.createElement('span');
-        item.innerHTML = `<span class="dot" style="background:${color}"></span>${escapeHtml(name)}`;
+        item.innerHTML = `${escapeHtml(emoji)} ${escapeHtml(name)}`;
         el.appendChild(item);
       });
     }
@@ -187,7 +194,8 @@
       items.forEach(({team, count}) => {
         const li = document.createElement('li');
         const color = TEAM_COLORS[team] || '#555';
-        li.innerHTML = `<span class="badge"><span class="dot" style="background:${color}"></span>${escapeHtml(team)}</span><span class="count">${count}</span>`;
+        const emoji = TEAM_EMOJIS[team] || '🥲';
+        li.innerHTML = `<span class="badge">${escapeHtml(emoji)}</span>${escapeHtml(team)}</span><span class="count">${count}</span>`;
         list.appendChild(li);
       });
     }
