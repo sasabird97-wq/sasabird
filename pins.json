@@ -5,7 +5,7 @@
     "lng": 14.4159,
     "title": "Piazza Umberto I",
     "desc": "Punto d’incontro",
-    "foundBy": "JB"
+    "foundBy": "Juventude Bonea"
   },
   {
     "id": 2,
@@ -13,7 +13,7 @@
     "lng": 14.4274,
     "title": "Marina di Vico",
     "desc": "Vista mare",
-    "foundBy": "HUNTERS"
+    "foundBy": "Assi"
   },
   {
     "id": 3,
@@ -29,7 +29,7 @@
     "lng": 14.4152,
     "title": "San Vito Belvedere",
     "desc": "Checkpoint",
-    "foundBy": null
+    "foundBy": "Volpi Del Faito"
   },
   {
     "id": 5,
@@ -37,7 +37,7 @@
     "lng": 14.4208,
     "title": "Corso Filangieri",
     "desc": "Indizio #5",
-    "foundBy": "SANS"
+    "foundBy": "Hunters"
   },
   {
     "id": 6,
@@ -45,22 +45,6 @@
     "lng": 14.4265,
     "title": "Marina d’Equa",
     "desc": "Prova pratica",
-    "foundBy": null
-  },
-  {
-    "id": 7,
-    "lat": 40.6685,
-    "lng": 14.4232,
-    "title": "Seiano",
-    "desc": "Bonus",
-    "foundBy": "VOLPI"
-  },
-  {
-    "id": 8,
-    "lat": 40.6662,
-    "lng": 14.4187,
-    "title": "Stazione Circum",
-    "desc": "Indizio rapido",
     "foundBy": null
   }
 ]
