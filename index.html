@@ -114,6 +114,18 @@
     const map = L.map('map').setView([40.660, 14.420], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 19, attribution: '&copy; OpenStreetMap contributors'}).addTo(map);
 
+    // Cerchio arancione semitrasparente – zona capsule (es. Marina di Vico)
+const zonaCapsule = L.circle([40.66551, 14.4277], {  // CENTRO DELLA ZONA
+  radius: 600,                 // raggio in metri (modificalo a piacere)
+  color: '#f97316',            // bordo arancione
+  weight: 2,                   // spessore bordo
+  fillColor: '#f97316',        // riempimento arancione
+  fillOpacity: 0.25,           // trasparenza (0 = trasparente, 1 = pieno)
+  stroke: true
+}).addTo(map);
+
+zonaCapsule.bindPopup('Zona speciale per capsule');
+
     // ===== TEAM COLORS =====
     const TEAM_COLORS = {"juventude bonea": "#e74c3c", "assi": "#2980b9", "inseriooni": "#27ae60", "volpi del faito": "#f1c40f", "sans village": "#8e44ad", "falò": "#e67e22", "hunters": "#16a085", "segugi": "#2c3e50", "modianus": "#d35400"}; // normalized (lowercase) name -> color
     const TEAM_EMOJIS = {"juventude bonea": "☢️", "assi": "🃏", "inseriooni": "🐲", "volpi del faito": "🦊", "sans village": "🏠", "falò": "🔥", "hunters": "🦈", "segugi": "🐶", "modianus": "🐉"};
